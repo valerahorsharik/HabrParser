@@ -39,6 +39,8 @@ class ParseController extends Controller {
     public function parse() {
 //        $data = file_get_contents('https://habrahabr.ru/all/page2/');
         $this->getAllPostsLinks();
+//          $this->getPostIdFromLink('https://habrahabr.ru/company/lenovo/blog/325558/');
+        var_dump($this->posts);
     }
 
     /**
@@ -90,6 +92,18 @@ class ParseController extends Controller {
         return $postsLinks;
     }
     
-    
+    /**
+     * 
+     * Get Post Id by parsing the $link
+     * 
+     * @param string $link
+     * 
+     * @return int Post id after parsing the link
+     */
+    protected function getPostIdFromLink($link) {
+        $postId = null;
+        preg_match('~\/([0-9]+)\/~', $link,$postId);
+        return $postId[1];
+    }
 
 }
