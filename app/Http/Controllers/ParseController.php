@@ -111,9 +111,9 @@ class ParseController extends Controller {
         $data = file_get_contents($link);
         $postPage = new Crawler($data);
         $post = $postPage->filter('div.post_full')->html();
-        var_dump($post);
         $time = $this->getPostTime($postPage);
-        var_dump($time);
+        $tags = $this->getPostTags($postPage);
+        var_dump($tags);
 //        echo '<pre>';
 //        echo $post->text();
         die;
@@ -221,6 +221,11 @@ class ParseController extends Controller {
      * @return array
      */
     protected function getPostTags(Crawler $postPage) {
+        $tags = array();
+        $tagsLinks = $postPage->filter('.post__tags .tags a');
+        foreach ($tagsLinks as $tagLink){
+            $tags[]=$tagLink->textContent;
+        }
         return $tags;
     }
 
