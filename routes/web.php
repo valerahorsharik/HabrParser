@@ -11,8 +11,5 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-Route::get('/parse', ['uses' => 'parse@ParseController']);
+Route::get('/', ['uses' => 'ParseController@parse']);
