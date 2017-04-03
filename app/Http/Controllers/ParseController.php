@@ -23,15 +23,14 @@ class ParseController extends Controller {
      * @var int 
      */
     protected $lastPostId;
-    
 
     public function __construct() {
         $this->getLastPostId();
     }
 
     public function parse() {
-        $this->getAllPostsLinks();
-        
+//        $this->getAllPostsLinks();
+        $this->getPostFromLink('https://habrahabr.ru/company/zfort/blog/325462/');
         var_dump($this->posts);
     }
 
@@ -52,11 +51,11 @@ class ParseController extends Controller {
      * 
      * @return bool 
      */
-    protected function getAllPostsLinks($currentPageNumber = 1,$numberOfAddingPost = 0) {
+    protected function getAllPostsLinks($currentPageNumber = 1, $numberOfAddingPost = 0) {
         $links = $this->getPostsLinksFromPage("https://habrahabr.ru/all/page{$currentPageNumber}/");
-        foreach ($links as $link){
+        foreach ($links as $link) {
             $postId = $this->getPostIdFromLink($link);
-            if ($postId == $this->lastPostId){
+            if ($postId == $this->lastPostId) {
                 return true;
             } else {
                 $this->posts[$numberOfAddingPost]['postId'] = $postId;
@@ -65,7 +64,7 @@ class ParseController extends Controller {
             }
         }
         $currentPageNumber++;
-        $this->getAllPostsLinks($currentPageNumber,$numberOfAddingPost);
+        $this->getAllPostsLinks($currentPageNumber, $numberOfAddingPost);
     }
 
     /**
@@ -79,15 +78,15 @@ class ParseController extends Controller {
     protected function getPostsLinksFromPage($page) {
         $postsLinks = null;
         $data = file_get_contents($page);
-        $crawler = new Crawler($data,$page);
+        $crawler = new Crawler($data, $page);
         $links = $crawler->filter('a.post__title_link')->links();
         foreach ($links as $link) {
             $postsLinks[] = $link->getUri();
         }
-        
+
         return $postsLinks;
     }
-    
+
     /**
      * 
      * Get Post Id by parsing the $link
@@ -98,41 +97,130 @@ class ParseController extends Controller {
      */
     protected function getPostIdFromLink($link) {
         $postId = null;
-        preg_match('~\/([0-9]+)\/~', $link,$postId);
+        preg_match('~\/([0-9]+)\/~', $link, $postId);
         return $postId[1];
     }
-    
+
     /**
      * 
      * Get post from $link
      * 
      * @param string $link
      */
-    protected function getPostFromLink($link){
-        
+    protected function getPostFromLink($link) {
+        $data = file_get_contents($link);
+        $postPage = new Crawler($data);
+        $post = $postPage->filter('div.post_full')->html();
+        var_dump($post);
+        $time = $this->getPostTime($postPage);
+        var_dump($time);
+//        echo '<pre>';
+//        echo $post->text();
+        die;
     }
-    
+
     /**
      * 
      * Get time of the $post
      * 
-     * @param string $post
+     * @param Crawler $postPage
+     * 
+     * @return string Unix Time
+     */
+    protected function getPostTime(Crawler $postPage) {
+        $time = '';
+        $time = $postPage->filter('span.post__time_published')->text();
+        $time = $this->formatTime($time);
+        $time = strtotime($time);
+        return $time;
+    }
+
+    /**
+     * 
+     * Change words in $time to normal format
+     * 
+     * @param string $time
      * 
      * @return string
      */
-    protected function getPostTime($post){
-        return $time;
+    protected function formatTime($time) {
+        $year = date('Y');
+        $date = null;
+        $formattedTime = trim($time);
+        $normalFormat = preg_match('/^([0-9]{1,2}) (\S+) в ([0-9:]{5})/', $formattedTime, $date);
+        if ($normalFormat) {
+            $day = $date[1];
+            $month = $this->formatMonth($date[2]);
+            $hoursAndMinutes = $date[3];
+            $formattedTime = "{$year}-{$month}-{$day} {$hoursAndMinutes}";
+        } else {
+            preg_match('/(\S+) в ([0-9:]{5})/', $formattedTime, $date);
+            $yearMonthDay = ($date[1] == 'сегодня')?date('Y-n-j'):date('Y-n-j', strtotime('yesterday'));
+            $hoursAndMinutes = $date[2];
+            $formattedTime = "{$yearMonthDay} {$hoursAndMinutes}";
+        }
+
+        return $formattedTime;
     }
-    
+
+    /**
+     * 
+     * Convert russian month into numeric month
+     * 
+     * @param string $russianMonth
+     * @return string
+     */
+    protected function formatMonth($russianMonth) {
+        switch ($russianMonth) {
+            case 'января':
+                $month = '1';
+                break;
+            case 'февраля':
+                $month = '2';
+                break;
+            case 'марта':
+                $month = '3';
+                break;
+            case 'апреля':
+                $month = '4';
+                break;
+            case 'мая':
+                $month = '5';
+                break;
+            case 'июня':
+                $month = '6';
+                break;
+            case 'июля':
+                $month = '7';
+                break;
+            case 'августа':
+                $month = '8';
+                break;
+            case 'сентября':
+                $month = '9';
+                break;
+            case 'октября':
+                $month = '10';
+                break;
+            case 'ноября':
+                $month = '11';
+                break;
+            case 'декабря':
+                $month = '12';
+                break;
+        }
+        return $month;
+    }
+
     /**
      * 
      * Get time of the $post
      * 
-     * @param string $post
+     * @param Crawler $postPage
      * 
      * @return array
      */
-    protected function getPostTags($post){
+    protected function getPostTags(Crawler $postPage) {
         return $tags;
     }
 
