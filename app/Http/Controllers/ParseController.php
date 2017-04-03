@@ -24,22 +24,13 @@ class ParseController extends Controller {
      */
     protected $lastPostId;
     
-    /**
-     *
-     * Number of the current page on habr
-     * 
-     * @var int 
-     */
-    protected $currentPageNumber = 1;
 
     public function __construct() {
         $this->getLastPostId();
     }
 
     public function parse() {
-//        $data = file_get_contents('https://habrahabr.ru/all/page2/');
         $this->getAllPostsLinks();
-//          $this->getPostIdFromLink('https://habrahabr.ru/company/lenovo/blog/325558/');
         var_dump($this->posts);
     }
 
@@ -47,7 +38,7 @@ class ParseController extends Controller {
      * Get last Post ID which we have in DB
      */
     protected function getLastPostId() {
-        $this->lastPostId = 325130;
+        $this->lastPostId = 325486;
     }
 
     /**
@@ -55,21 +46,25 @@ class ParseController extends Controller {
      * If we find post which equally $lastPostId then we return true
      * otherwise we keep finding it
      * 
+     * @param int $currentPageNumber Number of the current page on habr
+     * @param int $numberOfAddingPost Number of the post which we wanna add to $this->posts
+     * 
      * @return bool 
      */
-    protected function getAllPostsLinks() {
-        $links = $this->getPostsLinksFromPage("https://habrahabr.ru/all/page{$this->currentPageNumber}/");
+    protected function getAllPostsLinks($currentPageNumber = 1,$numberOfAddingPost = 0) {
+        $links = $this->getPostsLinksFromPage("https://habrahabr.ru/all/page{$currentPageNumber}/");
         foreach ($links as $link){
             $postId = $this->getPostIdFromLink($link);
             if ($postId == $this->lastPostId){
                 return true;
             } else {
-                $this->posts[]['postId'] = $postId;
-                $this->posts[]['postLink'] = $link;
+                $this->posts[$numberOfAddingPost]['postId'] = $postId;
+                $this->posts[$numberOfAddingPost]['postLink'] = $link;
+                $numberOfAddingPost++;
             }
         }
-        $this->currentPageNumber++;
-        $this->getAllPostsLinks();
+        $currentPageNumber++;
+        $this->getAllPostsLinks($currentPageNumber,$numberOfAddingPost);
     }
 
     /**
