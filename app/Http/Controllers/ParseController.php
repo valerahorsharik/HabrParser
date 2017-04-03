@@ -31,6 +31,7 @@ class ParseController extends Controller {
 
     public function parse() {
         $this->getAllPostsLinks();
+        
         var_dump($this->posts);
     }
 
@@ -99,6 +100,40 @@ class ParseController extends Controller {
         $postId = null;
         preg_match('~\/([0-9]+)\/~', $link,$postId);
         return $postId[1];
+    }
+    
+    /**
+     * 
+     * Get post from $link
+     * 
+     * @param string $link
+     */
+    protected function getPostFromLink($link){
+        
+    }
+    
+    /**
+     * 
+     * Get time of the $post
+     * 
+     * @param string $post
+     * 
+     * @return string
+     */
+    protected function getPostTime($post){
+        return $time;
+    }
+    
+    /**
+     * 
+     * Get time of the $post
+     * 
+     * @param string $post
+     * 
+     * @return array
+     */
+    protected function getPostTags($post){
+        return $tags;
     }
 
 }
