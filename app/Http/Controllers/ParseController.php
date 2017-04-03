@@ -23,20 +23,22 @@ class ParseController extends Controller {
      * @var int 
      */
     protected $lastPostId;
+    
+    /**
+     *
+     * Number of the current page on habr
+     * 
+     * @var int 
+     */
+    protected $currentPageNumber = 1;
 
     public function __construct() {
         $this->getLastPostId();
     }
 
     public function parse() {
-        $data = file_get_contents('https://habrahabr.ru/all/');
-        $crawler = new Crawler($data);
-        $crawler = $crawler->filter('a.post__title_link');
-        foreach ($crawler as $element) {
-            var_dump($element->getUri());
-//            $link = new Link($element,'https://habrahabr.ru/all/');
-//            var_dump($link->getUri());
-        }
+//        $data = file_get_contents('https://habrahabr.ru/all/page2/');
+        $this->getAllPostsLinks();
     }
 
     /**
@@ -48,12 +50,24 @@ class ParseController extends Controller {
 
     /**
      * Get all post which was published after our $lastPostId
+     * If we find post which equally $lastPostId then we return true
+     * otherwise we keep finding it
+     * 
+     * @return bool 
      */
     protected function getAllPostsLinks() {
-        $currentPostId = null;
-        while ($currentPostId != $this->lastPostId) {
-            
+        $links = $this->getPostsLinksFromPage("https://habrahabr.ru/all/page{$this->currentPageNumber}/");
+        foreach ($links as $link){
+            $postId = $this->getPostIdFromLink($link);
+            if ($postId == $this->lastPostId){
+                return true;
+            } else {
+                $this->posts[]['postId'] = $postId;
+                $this->posts[]['postLink'] = $link;
+            }
         }
+        $this->currentPageNumber++;
+        $this->getAllPostsLinks();
     }
 
     /**
@@ -66,9 +80,16 @@ class ParseController extends Controller {
      */
     protected function getPostsLinksFromPage($page) {
         $postsLinks = null;
-        
+        $data = file_get_contents($page);
+        $crawler = new Crawler($data,$page);
+        $links = $crawler->filter('a.post__title_link')->links();
+        foreach ($links as $link) {
+            $postsLinks[] = $link->getUri();
+        }
         
         return $postsLinks;
     }
+    
+    
 
 }
