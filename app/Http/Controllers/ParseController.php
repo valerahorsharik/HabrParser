@@ -30,7 +30,7 @@ class ParseController extends Controller {
 
     public function parse() {
 //        $this->getAllPostsLinks();
-        $this->getPostFromLink('https://habrahabr.ru/company/zfort/blog/325462/');
+        var_dump($this->getPostFromLink('https://habrahabr.ru/company/zfort/blog/325462/'));
         var_dump($this->posts);
     }
 
@@ -106,6 +106,8 @@ class ParseController extends Controller {
      * Get post from $link
      * 
      * @param string $link
+     * 
+     * @return array All data what we need(full post, time and tags)
      */
     protected function getPostFromLink($link) {
         $data = file_get_contents($link);
@@ -113,10 +115,7 @@ class ParseController extends Controller {
         $post = $postPage->filter('div.post_full')->html();
         $time = $this->getPostTime($postPage);
         $tags = $this->getPostTags($postPage);
-        var_dump($tags);
-//        echo '<pre>';
-//        echo $post->text();
-        die;
+        return array('full'=>$post,'time'=>$time,'tags'=>$tags);
     }
 
     /**
