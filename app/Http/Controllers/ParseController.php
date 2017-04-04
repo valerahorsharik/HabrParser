@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler as Crawler;
+use App\Post;
+Use App\Tag;
 
 class ParseController extends Controller {
 
@@ -32,14 +34,14 @@ class ParseController extends Controller {
         for($i = 0; $i < count($this->posts);$i++){
            $this->posts[$i]=  array_merge($this->posts[$i], $this->getPostFromLink($this->posts[$i]['postLink']));
         }
-        $this->save();
+//        $this->save();
     }
 
     /**
      * Get last Post ID which we have in DB
      */
     protected function getLastPostId() {
-        $this->lastPostId = 325486;
+        $this->lastPostId = Post::select('habr_id')->orderBy('unix_time','desc')->first()->habr_id;
     }
 
     /**
