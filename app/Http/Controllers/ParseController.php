@@ -294,6 +294,5 @@ class ParseController extends Controller {
         foreach ($tags as $tag){
            $this->tags[$tag->id] = $tag->tag;
         }
-        var_dump($this->tags);
     }
 }
