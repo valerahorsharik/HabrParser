@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler as Crawler;
-use Symfony\Component\DomCrawler\Link as Link;
 
 class ParseController extends Controller {
 
@@ -29,9 +28,11 @@ class ParseController extends Controller {
     }
 
     public function parse() {
-//        $this->getAllPostsLinks();
-        var_dump($this->getPostFromLink('https://habrahabr.ru/company/zfort/blog/325462/'));
-        var_dump($this->posts);
+        $this->getAllPostsLinks();
+        for($i = 0; $i < count($this->posts);$i++){
+           $this->posts[$i]=  array_merge($this->posts[$i], $this->getPostFromLink($this->posts[$i]['postLink']));
+        }
+        $this->save();
     }
 
     /**
@@ -226,6 +227,13 @@ class ParseController extends Controller {
             $tags[]=$tagLink->textContent;
         }
         return $tags;
+    }
+    
+    /**
+     * Save all posts from $this->posts in DB
+     */
+    protected function save(){
+        
     }
 
 }
