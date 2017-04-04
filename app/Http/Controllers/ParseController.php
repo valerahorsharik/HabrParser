@@ -24,6 +24,14 @@ class ParseController extends Controller {
      * @var int 
      */
     protected $lastPostId;
+    
+    /**
+     *
+     * All tags which we have in DB
+     * 
+     * @var array
+     */
+    protected $tags = array();
 
     public function __construct() {
         $this->getLastPostId();
@@ -34,7 +42,7 @@ class ParseController extends Controller {
         for($i = 0; $i < count($this->posts);$i++){
            $this->posts[$i]=  array_merge($this->posts[$i], $this->getPostFromLink($this->posts[$i]['postLink']));
         }
-//        $this->save();
+        $this->save();
     }
 
     /**
@@ -235,7 +243,57 @@ class ParseController extends Controller {
      * Save all posts from $this->posts in DB
      */
     protected function save(){
-        
+        $this->getTags();
+        foreach ($this->posts as $post){
+               $createdPost =  Post::create(['habr_id' => $post['postId'],
+                                            'post' => $post['full'],
+                                            'unix_time' => $post['time']]);
+                $this->attachPostTags($createdPost,$post['tags']);
+        }
     }
-
+    
+    
+    /**
+     * 
+     * Attach all tags from $post in the post in DB
+     * 
+     * @param Post $post
+     * @param array $postTags
+     */
+    protected function attachPostTags(Post $post,$postTags){
+        foreach ($postTags as $tag) {
+            $currentTagId = $this->checkPostTag($tag);
+            $post->tags()->attach($currentTagId);
+        }
+    }
+    
+    /**
+     * 
+     * Checking if we have this tag in DB,
+     * if not - save them.
+     * 
+     * @param string $postTag
+     * 
+     * @return int Id of the $postTag
+     */
+    protected function checkPostTag($postTag){
+        $postTag = mb_strtolower($postTag, 'UTF-8');
+        if (!in_array($postTag, $this->tags)){
+            $createdTag = Tag::create(['tag' => $postTag]);
+            $this->tags[$createdTag->id] = $postTag ;
+            return $createdTag->id;
+        } 
+        return array_search($postTag, $this->tags);
+    }
+    
+    /**
+     * Get all tags from DB into $this->tags
+     */
+    protected function getTags(){
+        $tags = Tag::all();
+        foreach ($tags as $tag){
+           $this->tags[$tag->id] = $tag->tag;
+        }
+        var_dump($this->tags);
+    }
 }
