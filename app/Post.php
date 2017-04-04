@@ -15,6 +15,14 @@ class Post extends Model
         'habr_id','post','unix_time'
     ];
     
+    /**
+     *
+     * Turn off timestamps
+     * 
+     * @var bool
+     */
+    public $timestamps = false;
+    
     public function tags(){
         return $this->belongsToMany('App\Tag', 'post_tags');
     }
