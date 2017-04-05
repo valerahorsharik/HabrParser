@@ -12,4 +12,6 @@
 */
 
 
-Route::get('/', ['uses' => 'ParseController@parse']);
+Route::get('/parse', ['uses' => 'ParseController@parse']);
+Route::get('/post/{id}', ['uses' => 'PostController@show']);
+Route::get('/{sortBy?}', ['uses' => 'PostController@index']);
