@@ -36,13 +36,21 @@ class ParseController extends Controller {
     public function __construct() {
         $this->getLastPostId();
     }
-
+    
+    /**
+     * 
+     * Parse posts from habrahabr.ru
+     * 
+     * @return int Count of parsed posts
+     */
     public function parse() {
         $this->getAllPostsLinks();
         for($i = 0; $i < count($this->posts);$i++){
            $this->posts[$i]=  array_merge($this->posts[$i], $this->getPostFromLink($this->posts[$i]['postLink']));
         }
         $this->save();
+        
+        return count($this->posts);
     }
 
     /**
